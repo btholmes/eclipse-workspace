@@ -1,4 +1,4 @@
-
+// package ref;
 
 /**
  * Implements a random hash function of
@@ -12,18 +12,16 @@ public class HashFunction {
 	
 	public HashFunction(int range) {
 		p = findPrime(range);
-		Random r = new Random();
+		Random r = new Random(1);
 		a = 0;
 		while (a==0)
 			a = r.nextInt(p);
 		b = 0;
 		while (b==0)
 			b = r.nextInt(p);
-		
-	}
-	
-	public int getPrime() {
-		return this.p; 
+
+		// Fixed for testing:
+		// a = 3; b = 2;
 	}
 	
 	/**
@@ -49,11 +47,14 @@ public class HashFunction {
 		
 	}
 	
+	public int getPrime() {
+		return p; 
+	}
+	
 	private boolean isPrime(int n) {
 		for(int i= 2; i<=Math.sqrt(n); i++)
 			if (n%i==0)
 				return false;
 		return true;
 	}
-
 }

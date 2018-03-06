@@ -1,0 +1,85 @@
+Report: (60/100) Wrong run time  for add and search. Wrong analysis for length and similarity in bruteforce, hashString, hashCode.
+
+[total points: 191/400]
+
+[We rescaled correctness/efficiency; your total score is calculated as
+ceiling(250/300 * correctness + 150/100 * efficiency)]
+
+[correctness: 194.0/300; correctness-scaled efficiency: 19.40911/100]
+[correctness deductions:
+test testHashTableEfficiency(AllTests) failed with exception java.lang.NullPointerException (-0); 
+test testHSSEfficiency2(AllTests) failed with exception org.junit.runners.model.TestTimedOutException: test timed out after 300000 milliseconds (-0); 
+test similarityBFS1(AllTests) failed with exception java.lang.AssertionError: incorrect brute force similarity (-7);	****************** (Fixed by changing precision)
+test similarityBFS2(AllTests) failed with exception java.lang.AssertionError: incorrect brute force similarity (-7);	****************** (Fixed by changing precision) 
+test similarityBFS3(AllTests) failed with exception java.lang.AssertionError: incorrect brute force similarity (-7);	****************** (Fixed by changing precision) 
+test similarityBFS4(AllTests) failed with exception java.lang.AssertionError: incorrect brute force similarity (-7);	****************** (Fixed by changing precision) 
+test vlengthS1BFS0(AllTests) failed with exception java.lang.AssertionError: incorrect brute force vector length (-7);	****************** (Fixed by changing precision) 
+test vlengthS1BFS1(AllTests) failed with exception java.lang.AssertionError: incorrect brute force vector length (-7);	****************** (Fixed by changing precision) 
+test vlengthS1BFS2(AllTests) failed with exception java.lang.AssertionError: incorrect brute force vector length (-7);	****************** (Fixed by changing precision) 
+test vlengthS1BFS3(AllTests) failed with exception java.lang.AssertionError: incorrect brute force vector length (-7);	****************** (Fixed by changing precision) 
+test vlengthS1BFS4(AllTests) failed with exception java.lang.AssertionError: incorrect brute force vector length (-7);	****************** (Fixed by changing precision) 
+
+test searchTupleRemoved0(AllTests) failed with exception java.lang.AssertionError: tuple frequency incorrect (-5); 
+test loadFactorDoubled(AllTests) failed with exception java.lang.AssertionError: hashtable has incorrect load factor (-7); 
+test avgLoadDoubled(AllTests) failed with exception java.lang.AssertionError: hashtable has incorrect average load (-7); 
+test searchTupleDups0(AllTests) failed with exception java.lang.AssertionError: tuple frequency incorrect (-5); 
+
+
+test testHSSEfficiency(AllTests) test timed out after 300000 milliseconds (-0); 									****************** 		
+test searchTupleRemoved0(AllTests) failed with exception java.lang.AssertionError: tuple frequency incorrect (-5); 
+test searchTupleRemoved1(AllTests) failed with exception java.lang.NullPointerException (-5); 						*******************     
+test avgLoad(AllTests) failed with exception java.lang.AssertionError: hashtable has incorrect average load (-7);   *******************     (Fixed by changing ints to floats)
+test loadFactor(AllTests) failed with exception java.lang.AssertionError: hashtable has incorrect load factor (-7); *******************     (Fixed changing ints to floats) 
+test loadFactorDoubled(AllTests) failed with exception java.lang.AssertionError: hashtable has incorrect load factor (-7); 
+test testHashTableEfficiency2(AllTests) failed with exception java.lang.NullPointerException (-0);                  *******************     
+test avgLoadDoubled(AllTests) failed with exception java.lang.AssertionError: hashtable has incorrect average load (-7); 
+test searchTupleDups0(AllTests) failed with exception java.lang.AssertionError: tuple frequency incorrect (-5); 
+
+]
+
+[We calculated several efficiency categories; for each, we scaled by correctness and compared student runtime to a reference implementation:
+efficiencyPoints = pointsPossible * correctnessPoints / correctnessPointsPossible * min(1, 1.5 * referenceTime / studentTime).
+(Units are nanoseconds; HashTable add was scaled by search correctness)]
+[HashTable add (8.684211/10): 32530110 student, 15613744221 ref]
+[HashTable search(int k) (4.0/4): 28744277 student, 32807597 ref]
+[HashTable search(Tuple t) (3.1666667/4): 37933749 student, 40018824 ref]
+[HashTable remove (0.0/7): 9223372036854775807 student, 37329961 ref]
+[BruteForceSimilarity (1.5/15): 27544720239 student, 35658904874 ref]
+[HashStringSimilarity (0.6230605/30): 506119042705 student, 7007617263 ref]
+[HashCodeSimilarity (1.435172/30): 143665657633 student, 4581887521 ref]
+================================================================
+
+
+******************************************* RESULTS AFTER CHANGING INTS TO FLOATS ******************************************************
+
+
+
+================================================================
+points before report: 372; comments below (v2)
+================================================================
+[total points: 372/400]
+Total = 372 + 60 = 432  
+
+[We rescaled correctness/efficiency; your total score is calculated as
+ceiling(250/300 * correctness + 150/100 * efficiency)]
+
+[correctness: 276.0/300; correctness-scaled efficiency: 94.350876/100]
+[correctness deductions:
+test searchTupleRemoved0(AllTests) failed with exception java.lang.AssertionError: tuple frequency incorrect (-5); 
+test loadFactorDoubled(AllTests) failed with exception java.lang.AssertionError: hashtable has incorrect load factor (-7); 
+test avgLoadDoubled(AllTests) failed with exception java.lang.AssertionError: hashtable has incorrect average load (-7); 
+test searchTupleDups0(AllTests) failed with exception java.lang.AssertionError: tuple frequency incorrect (-5); 
+
+]
+
+[We calculated several efficiency categories; for each, we scaled by correctness and compared student runtime to a reference implementation:
+efficiencyPoints = pointsPossible * correctnessPoints / correctnessPointsPossible * min(1, 1.5 * referenceTime / studentTime).
+(Units are nanoseconds; HashTable add was scaled by search correctness)]
+[HashTable add (8.684211/10): 9223372036854775807 student, 9223372036854775807 ref]
+[HashTable search(int k) (4.0/4): 9223372036854775807 student, 9223372036854775807 ref]
+[HashTable search(Tuple t) (3.1666667/4): 9223372036854775807 student, 9223372036854775807 ref]
+[HashTable remove (3.5/7): 9223372036854775807 student, 9223372036854775807 ref]
+[BruteForceSimilarity (15.0/15): 9223372036854775807 student, 9223372036854775807 ref]
+[HashStringSimilarity (30.0/30): 9223372036854775807 student, 9223372036854775807 ref]
+[HashCodeSimilarity (30.0/30): 9223372036854775807 student, 9223372036854775807 ref]
+================================================================

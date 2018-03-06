@@ -1,8 +1,13 @@
 import java.util.ArrayList;
 
-/**
- * This HashCode function has the option to implement roll-over hashing
- */
+// LEAVE THIS FILE IN THE DEFAULT PACKAGE
+//  (i.e., DO NOT add 'package cs311.pa1;' or similar)
+
+// DO NOT MODIFY THE EXISTING METHOD SIGNATURES
+//  (you may, however, add member fields and additional methods)
+
+// DO NOT INCLUDE LIBRARIES OUTSIDE OF THE JAVA STANDARD LIBRARY
+//  (i.e., you may include java.util.ArrayList etc. here, but not junit, apache commons, google guava, etc.)
 
 /**
 * @author Ben Holmes, Anthony House
@@ -109,8 +114,7 @@ public class HashCodeSimilarity
 	/**
 	 * Just a note, we chose not to use roll over hashing because due to overflow, it results in way too many incorrect hashes. 
 	 * If we would have been allowed to use a long instead of an int, we would have used rollover with much better accurracy, 
-	 * but because we could only store an int value, we chose accuracy over the speed improvement. If you use a small shingle size 
-	 * such as 4, then you can uncomment the hash function below (Uses roll over hashing) and run that instead of the uncommented one. 
+	 * but because we could only store an int value, we chose accuracy over the speed improvement. 
 	 * 
 	 * @param mainString
 	 * @param s1
@@ -131,36 +135,16 @@ public class HashCodeSimilarity
 			hash = computeHash(firstString); 
 			if(s1) addToS1(firstString, hash); 
 			else addToS2(firstString, hash); 
-		}
-			
-	}
-	
-//	public void hashItOut(String mainString, boolean s1) {
-//		if(mainString.length() < length) {
-//			return; 
-//		}
-//		if(mainString.length() == length) {
-//			if(s1) addToS1(mainString, computeHash(mainString)); 
-//			else addToS2(mainString, computeHash(mainString)); 
-//		}
-//		
-//		
-//		String firstString = "";  
-//		int hash = computeHash(mainString.substring(0,length));
-//		
-//		for(int i = 0; i <= mainString.length()-length-1; i++) {
-//			if(s1) addToS1(firstString, hash); 
-//			else addToS2(firstString, hash); 
 //			hash -= mainString.charAt(i); 
 //			hash = hash/prime; 
 //			hash += mainString.charAt(i+length) * power(prime, length -1);
-//		}
+		}
 //		if(s1) {
 //			addToS1(firstString, hash); 
 //		}
 //		else addToS2(firstString, hash); 
-//			
-//	}
+			
+	}
 
 	public float lengthOfS1()
 	{
