@@ -1,10 +1,15 @@
 package main;
 
 
-
+/**
+ * Segment class
+ * @author aguestuser
+ *
+ */
 public class Segment{
-	Point p1; 
-	Point q1; 
+	private String name; 
+	private Point p1; 
+	private Point q1; 
 
 	public Segment(Point one, Point two) {
 		   if (one.compareTo(two) <= 0) {
@@ -16,21 +21,16 @@ public class Segment{
 	        }
 	}
 	
+	public void setName(String name) {
+		this.name = name; 
+	}
 	
-    public Point getLeftEndPoint() {
+    public Point getP1() {
         return p1;
     }
 
-    public Point getRightEndPoint() {
+    public Point getQ1() {
         return q1;
-    }
-
-    public int getMinX() {
-        return p1.getX();
-    }
-
-    public int getMaxX() {
-        return q1.getX();
     }
 
     public int getMinY() {
@@ -41,10 +41,100 @@ public class Segment{
         return Math.max(p1.getY(), q1.getY());
     }
 
-//    public Line2D.Double getline() {
-//        return l;
-//    }
+    /**
+     * Returns the point on the segment at the given x value or p1 if vertical
+     * 
+     * sum = (Px-Ax)By + (Bx-Px)Ay
+     * y = sum/(Bx-Ax)
+     * 
+     * @param 
+     * @return
+     */
+    public Point intersectionPoint(int x) {
+        if (p1.getX() != q1.getX()) {        	
+        	int Px = x; 
+        	long Ax = (long)p1.getX(); 
+        	long Ay = (long)p1.getY(); 
+        	
+        	long Bx = (long)q1.getX(); 
+        	long By = (long)q1.getY(); 
+        	
+            long sum = ((long) (Px - Ax)) * By + ((long) (Bx - Px)) * Ay; 
+            double yval = (sum * 1.0) / (Bx - Ax);
+            return new Point(x, (int) yval);
+        } else {
+        	/**
+        	 * Is a vertical segment, so return p1
+        	 */
+            return new Point(p1.getX(), p1.getY());
+        }
+    }
+    
+    /**
+     * Determines if the given point is on or above the segment using cross products for AB and AP
+     * 
+     * v1 = {x2-x1, y2-y1}   # Vector 1 
+     * v2 = {x2-Px, y2-Py}   # Vector 1
+     * 
+     * xp = v1x*v2y - v1y*v2x  # Cross product
+     * 
+     * Otherwise we need to find the sign and compare it to the sign of a point we know is above the line
+     * 
+     * @param 
+     * @param 
+     * @return
+     */
+    public boolean isPointAboveSeg(Point point) {
+    	int x = point.getX(); 
+    	int y = point.getY(); 
+        boolean answer = ((x - this.getP1().getX()) * this.getQ1().getY() + (this.getQ1().getX() - x) * this.getP1().getY()) < (y * (this.getQ1().getX() - this.getP1().getX()));
 
+        int Px = point.getX();
+        int Py = point.getY();
+        
+        int x1 = this.getP1().getX(); 
+        int y1 = this.getP1().getY(); 
+        
+        int x2 = this.getQ1().getX(); 
+        int y2 = this.getQ1().getY(); 
+        
+        int v1x = x2-x1; 
+        int v1y = y2-y1; 
+        
+        int v2x = x2-Px; 
+        int v2y = y2-Py; 
+        
+        int xp = v1x*v2y - v1y*v2x; 
+        
+        /**
+         * Means this point lies on the segment
+         */
+        if(xp == 0) {
+//        	if(answer != true) System.out.println("Wrong answer = 0"); 
+        	return answer; 
+        }
+        
+        /**
+         * We need to determine what side of the line the point lies on. We know that (x1,y1+1) lies above the line, so we calculate the xp again using that as 
+         * our new Px and Py, and we will compare that sign to the answer. If they have the same sign, the point lies above the line, otherwise it lies below. 
+         */    
+        Px = x1; 
+        Py = y1+1; 
+        
+        v2x = x2-Px;
+        v2y = y2-Py; 
+        
+        int above = v1x*v2y - v1y*v2x; 
+        
+        if(above > 0) {
+//        	if(xp > 0 != answer) System.out.println("Wrong answer +");
+        	return answer; 
+        }else {
+//        	if(xp < 0 != answer) System.out.println("Wrong answer -");
+        	return answer; 
+        }
+    }
+    
     @Override
     public boolean equals(Object s) {
         if (!(s instanceof Segment) || s == null) {
@@ -52,87 +142,6 @@ public class Segment{
         }
         Segment ss = (Segment) s;
         return ss.p1.equals(this.p1) && ss.q1.equals(this.q1);
-    }
-
-    /**
-     * Returns the point on the segment at the given x value or the lower
-     * endpoint if the segment is vertical. The behavior for vertical segments
-     * may change later
-     *
-     * @param x The x-value to intersect the line at
-     * @return The point on the line (segment) at the given x-value
-     */
-    public Point intersect(int x) {
-        if (p1.getX() != q1.getX()) {
-
-            long ysum = ((long) (x - p1.getX())) * ((long) q1.getY()) + ((long) (q1.getX() - x)) * ((long) p1.getY());
-            double yval = (ysum * 1.0) / (q1.getX() - p1.getX());
-            return new Point(x, (int) yval);
-        } else {
-            return new Point(p1.getX(), p1.getY());
-        }
-    }
-
-    private double getSlope() {
-        if (isVertical()) {
-            return 0;
-        }
-        return (q1.getY() - p1.getY()) / ((double) (q1.getX() - p1.getX()));
-    }
-
-
-    private boolean isVertical() {
-        return (q1.getX() == p1.getX());
-    }
-
-    /**
-     * Checks to see if this segment object crosses another properly (not a
-     * shared endpoint)
-     *
-     * @param other The other segment to check against
-     * @return True if the segments intersect at a point which is not a common
-     * vertex
-     */
-    public boolean crosses(Segment other) {
-        //check if x-ranges overlap
-        if (other.p1.getX() > this.q1.getX()) {
-            return false;
-        }
-        if (other.q1.getX() < this.p1.getX()) {
-            return false;
-        }
-
-        //at this point, the x-ranges overlap
-        if (this.isVertical() && other.isVertical()) {//they must lie vertically aligned
-            if (this.getMaxY() <= other.getMinY() || this.getMinY() >= other.getMaxY()) {
-                return false;
-            }
-            return true;
-        } else if (this.isVertical()) {
-            Point p = other.intersect(this.p1.getX());
-            return (p.getY() > this.getMinY()) && (p.getY() < this.getMaxY());
-        } else {//neither is a vertical line
-            //we use a bounding box technique instead of directly computing the intersection
-            //it is quite possible we aren't saving any time with this strategy
-
-            //must find the intersection points
-            double slope1 = this.getSlope();
-            double slope2 = other.getSlope();
-            //use slope1 to calculate 3 b's, same for slope2
-            double b00 = this.p1.getY() - this.p1.getX() * slope1;
-            double b01 = other.p1.getY() - other.p1.getX() * slope1;
-            double b02 = other.q1.getY() - other.q1.getX() * slope1;
-
-            double b10 = other.p1.getY() - other.p1.getX() * slope2;
-            double b11 = this.p1.getY() - this.p1.getX() * slope2;
-            double b12 = this.q1.getY() - this.q1.getX() * slope2;
-            if (((b01 <= b00 && b00 <= b02) || (b01 >= b00 && b00 >= b02)) && ((b11 <= b10 && b10 <= b12) || b11 >= b10 && b10 >= b12)) {
-                return this.equals(other) || !(this.p1.equals(other.p1) || this.p1.equals(other.q1) || this.q1.equals(other.p1) || this.q1.equals(other.q1));
-
-            }
-        }
-
-        return false;
     }
 
     @Override

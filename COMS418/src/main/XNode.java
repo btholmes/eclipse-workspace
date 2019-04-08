@@ -9,10 +9,6 @@ public class XNode extends Node {
         data = p;
     }
     
-    /**
-     * Return the Point contained in the Node
-     * @return The Point data
-     */
     public Point getData() {
         return data;
     }

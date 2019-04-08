@@ -61,7 +61,7 @@ class Drawing extends Canvas{
     		Segment[] bounds = zoid.getBoundary(); 
     		for(int i = 0; i < 4; i++) {
     			Segment seg = bounds[i]; 
-    			g2d.drawLine((seg.p1.getX()), height - (seg.p1.getY()), (seg.q1.getX()), height - (seg.q1.getY()));
+    			g2d.drawLine((seg.getP1().getX()), height - (seg.getP1().getY()), (seg.getQ1().getX()), height - (seg.getQ1().getY()));
     		}
     		
     	}

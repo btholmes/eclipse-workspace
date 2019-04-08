@@ -9,10 +9,6 @@ public class YNode extends Node{
         data = s;
     }
     
-    /**
-     * Return the segment data held by this Node
-     * @return the segment data
-     */
     public Segment getData() {
         return data;
     }

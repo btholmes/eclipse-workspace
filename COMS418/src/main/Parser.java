@@ -55,10 +55,10 @@ class Parser{
 				  System.out.println("Trapezoid containing the point " + point + ":" );
 				  
 				  Trapezoid zoid = constructor.query(point); 
-				  Segment top = zoid.getTopSegment(); 
-		    		Segment bottom = zoid.getBottomSegment(); 
-		    		Point left = zoid.getLeftPoint(); 
-		    		Point right = zoid.getRightPoint(); 
+				  Segment top = zoid.getTopSeg(); 
+		    		Segment bottom = zoid.getBottomSeg(); 
+		    		Point left = zoid.getLeftP(); 
+		    		Point right = zoid.getRightP(); 
 		    		
 		    		System.out.println(top);
 		    		System.out.println(bottom);

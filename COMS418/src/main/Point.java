@@ -18,18 +18,6 @@ public class Point implements Comparable<Point> {
         return y;
     }
 
-    public int compareToX(Point p) {
-        if (p == null) {
-            return 1;
-        }
-        if (this.x < p.x) {
-            return -1;
-        }
-        if (this.x == p.x) {
-            return 0;
-        }
-        return 1;
-    }
 
     public int compareTo(Point p) {
         if (p == null) {
@@ -44,6 +32,7 @@ public class Point implements Comparable<Point> {
         }
     }
 
+    @Override
     public boolean equals(Object p) {
         if (p == null || !(p instanceof Point)) {
             return false;
