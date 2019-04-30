@@ -56,7 +56,8 @@ public class Point implements Comparable<Point> {
         }
         if (this.x < p.x || (this.x == p.x && this.y < p.y)) {
             return -1;
-        } else if ((this.x == p.x) && (this.y == p.y)) {
+        } else if ( (-0.000001 <= (this.x - p.x)  && (this.x - p.x)<= 0.000001 ) && 
+        		    (-0.000001 <= (this.y - p.y)  && (this.y - p.y)<= 0.000001 )  ) {
             return 0;
         } else {
             return 1;
@@ -69,7 +70,8 @@ public class Point implements Comparable<Point> {
             return false;
         }
         Point pp = (Point) p;
-        return Math.abs(this.x - pp.x) <= 0.000001 && Math.abs(this.y - pp.y)<= 0.000001;
+        return (-0.000001 <= (this.x - pp.x)  && (this.x - pp.x)<= 0.000001 ) && 
+    		    (-0.000001 <= (this.y - pp.y)  && (this.y - pp.y)<= 0.000001 ) ; 
     }
 
     @Override

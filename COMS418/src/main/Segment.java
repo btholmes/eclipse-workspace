@@ -235,7 +235,8 @@ public class Segment{
     
     
     public boolean liesOn(Point point) {
-    	return distance(this.getP1(), point) + distance(point,this.getQ1()) == distance(this.getP1(), this.getQ1());     	
+    	return (-0.000001 <= (distance(this.getP1(), point) + distance(point,this.getQ1()) - distance(this.getP1(), this.getQ1()) )) &&
+    			((distance(this.getP1(), point) + distance(point,this.getQ1()) - distance(this.getP1(), this.getQ1()) ) <= 0.000001); 
     }
     
     @Override
