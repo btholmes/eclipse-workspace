@@ -3,8 +3,9 @@ package main;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -19,6 +20,19 @@ public class StructureConstructor{
 	private Scanner in; 
 	private String fileName; 
 	private ArrayList<Segment> segments; 
+	private HashMap<String, Segment> segmentMap; 
+	private HashMap<String, Point> pointMap; 
+	private HashMap<Point, String> pointLookUp; 
+	private HashMap<String, Face> faceMap; 
+	private Segment L; 
+	private Segment R; 
+	private Segment T; 
+	private Segment B; 
+	private Face unboundedFace; 
+	
+	private Point leftP; 
+	private Point rightP; 
+	
 	/**
 	 * 0 = original, 1 = shuffle
 	 */
@@ -29,10 +43,10 @@ public class StructureConstructor{
 	 */
 	private DAG dag; 
 	
-	int minX = Integer.MAX_VALUE; 
-	int maxX = Integer.MIN_VALUE; 
-	int minY = Integer.MAX_VALUE; 
-	int maxY = Integer.MIN_VALUE; 
+	double minX = Integer.MAX_VALUE; 
+	double maxX = Integer.MIN_VALUE; 
+	double minY = Integer.MAX_VALUE; 
+	double maxY = Integer.MIN_VALUE; 
 	
 	public StructureConstructor(String fileName, int order) throws FileNotFoundException {
 		this.fileName = fileName; 
@@ -47,28 +61,29 @@ public class StructureConstructor{
 	private void construct() {
 		
 		segments = new ArrayList<>(); 
-		int i = 1; 
+		segmentMap = new HashMap<>(); 
+		pointMap = new HashMap<>(); 
+		pointLookUp = new HashMap<>(); 
+		faceMap = new HashMap<>(); 
+		
 		  while(in.hasNext()) {
-			  String next = in.next(); 
-			  String trim = next.substring(1, next.length()-1); 
-			  String[] parse = trim.split(","); 
-			  Point pointa = new Point(Integer.parseInt(parse[0]), Integer.parseInt(parse[1])); 
-			  next = in.next(); 
-			  trim = next.substring(1, next.length()-1); 
-			  parse = trim.split(","); 
-			  Point pointb = new Point(Integer.parseInt(parse[0]), Integer.parseInt(parse[1])); 
+			  String line = in.nextLine(); 
+			  if(line == null || line.length() == 0) continue; 
 			  
-			  minX = Math.min(minX, Math.min(pointa.getX(), pointb.getX())); 
-			  maxX = Math.max(maxX,  Math.max(pointa.getX(), pointb.getX())); 
-			  
-			  minY = Math.min(minY, Math.min(pointa.getY(), pointb.getY())); 
-			  maxY = Math.max(maxY,  Math.max(pointa.getY(), pointb.getY())); 
-			  
-			  Segment seg = new Segment(pointa, pointb); 
-			  seg.setName("s" + i);
-			  segments.add(seg); 
-			  i++; 
+			  line = line.trim(); 
+			  if(line.charAt(0) == 'v') {
+				  makeVertex(line); 
+			  }else if(line.charAt(0) == 'f') {
+				  makeFace(line); 
+			  }else if(line.charAt(0) == 'e') {
+				  makeEdge(line); 
+			  }
 		  }
+		  
+//		  minX -= 2; 
+		  maxX += 2.0; 
+//		  minY -= 2; 
+		  maxY += 2.0; 
 		  
 		  if(order == 1)
 			  Collections.shuffle(segments);
@@ -76,6 +91,140 @@ public class StructureConstructor{
 		  makeStruct();  
 	}	
 	
+	
+	
+	public double getMinX() {
+		return minX;
+	}
+
+	public void setMinX(double minX) {
+		this.minX = minX;
+	}
+
+	public double getMaxX() {
+		return maxX;
+	}
+
+	public void setMaxX(double maxX) {
+		this.maxX = maxX;
+	}
+
+	public double getMinY() {
+		return minY;
+	}
+
+	public void setMinY(double minY) {
+		this.minY = minY;
+	}
+
+	public double getMaxY() {
+		return maxY;
+	}
+
+	public void setMaxY(double maxY) {
+		this.maxY = maxY;
+	}
+	
+	
+
+	public HashMap<Point, String> getPointLookUp() {
+		return pointLookUp;
+	}
+
+	public void setPointLookUp(HashMap<Point, String> pointLookUp) {
+		this.pointLookUp = pointLookUp;
+	}
+	
+	
+
+	public HashMap<String, Segment> getSegmentMap() {
+		return segmentMap;
+	}
+
+	public void setSegmentMap(HashMap<String, Segment> segmentMap) {
+		this.segmentMap = segmentMap;
+	}
+
+	private void makeVertex(String line) {
+		line = line.replaceAll(" +", " "); 
+		int start = line.indexOf('('); 
+		String name = line.substring(0, start -1).trim(); 
+		int end = line.indexOf(')'); 
+		int comma = line.indexOf(','); 
+		double a = Double.parseDouble(line.substring(start +1, comma).trim()); 
+		double b = Double.parseDouble(line.substring(comma + 1, end).trim()); 
+		String edge = line.substring(end + 1).trim(); 
+		
+		Point point = new Point(a,b); 
+		point.setName(name);
+		point.setEdge(edge);
+		pointMap.put(name, point); 
+		pointLookUp.put(point, name); 
+		
+	  minX = Math.min(minX, point.getX()); 
+	  maxX = Math.max(maxX,  point.getX()); 
+	  
+	  minY = Math.min(minY, point.getY()); 
+	  maxY = Math.max(maxY,  point.getY()); 
+	}
+	
+	private void makeFace(String line) {
+		line = line.replaceAll(" +", " "); 
+		String[] array = line.split(" "); 
+		String name = array[0].trim(); 
+		String outter = array[1].trim();
+		
+		Face face = new Face(name);
+		face.setOuterEdge(outter); 
+		
+		if(array[2].contains(";")) {
+			String[] innerEdges = array[2].trim().split(";");
+			ArrayList<String> edges = new ArrayList<>(Arrays.asList(innerEdges)); 
+			face.setInnerEdges(edges);
+		}else {
+			face.addInnerEdge(array[2]);
+		}
+		
+		if(outter.equalsIgnoreCase("nil")) {
+			unboundedFace = face; 
+		}
+		
+		faceMap.put(name,  face); 
+	}
+	
+	private void makeEdge(String line) {
+		line = line.replaceAll(" +", " "); 
+		String[] array = line.split(" "); 
+		String name = array[0]; 
+		String origin = array[1]; 
+		String twin = array[2]; 
+		String face = array[3]; 
+		String next = array[4]; 
+		String prev = array[5]; 
+		
+		String[] nameSplit = name.trim().substring(1).split(","); 
+		Segment seg = new Segment(pointMap.get("v" + nameSplit[0]), pointMap.get("v" + nameSplit[1])); 
+		seg.setName(name);
+		seg.setOrigin(origin);
+		seg.setTwin(twin);
+		seg.setFace(face);
+		seg.setNext(next);
+		seg.setPrev(prev);
+		
+		segmentMap.put(name,  seg); 
+	    segments.add(seg); 		
+	}
+	
+	
+	
+	public Face getUnboundedFace() {
+		return unboundedFace;
+	}
+
+	public void setUnboundedFace(Face unboundedFace) {
+		this.unboundedFace = unboundedFace;
+	}
+
 	public Trapezoid query(Point point) {
 		return dag.searchPointInDAG(point, null).getData(); 
 	}
@@ -85,21 +234,33 @@ public class StructureConstructor{
 	}
 	
 	private void makeStruct() {
-        Point left = new Point(minX, minY);
-        Point right = new Point(maxX, maxY);
+        leftP = new Point(minX, minY);
+        Point tLeft = new Point(minX, maxY); 
+        rightP = new Point(maxX, maxY);
+        Point bRight = new Point(maxX, minY); 
         /**
          * This is the bounding box
          */
-        Trapezoid t = new Trapezoid(left, right, new Segment(new Point(minX, maxY), new Point(maxX, maxY)),
-                new Segment(new Point(minX, minY), new Point(maxX, minY)));
+        L = new Segment(leftP, tLeft); 
+        L.setFace(unboundedFace.getName());
+        
+        R = new Segment(bRight, rightP); 
+        R.setFace(unboundedFace.getName());
+        
+        T = new Segment(tLeft, rightP); 
+        T.setFace(unboundedFace.getName());
+        
+        B = new Segment(leftP, bRight); 
+        B.setFace(unboundedFace.getName());
+        
+        Trapezoid t = new Trapezoid(leftP, rightP, T, B);
+        t.setFace(unboundedFace.getName());
+        
         Leaf f = new Leaf(t);
         t.setLeaf(f);
         dag.setRoot(f);
         
-        
         for (int i = 0; i < segments.size() && segments.get(i) != null; i++) {
-            //find the trapezoids intersected by arr[i]
-            //System.out.println("in loop");
             ArrayList<Leaf> list = dag.followSegment(segments.get(i));
             
             if(list.size() == 1) {
@@ -110,152 +271,222 @@ public class StructureConstructor{
         }
 	}
 	
+	
+	public Segment getL() {
+		return L;
+	}
+
+	public void setL(Segment l) {
+		L = l;
+	}
+
+	public Segment getR() {
+		return R;
+	}
+
+	public void setR(Segment r) {
+		R = r;
+	}
+
+	public Segment getT() {
+		return T;
+	}
+
+	public void setT(Segment t) {
+		T = t;
+	}
+
+	public Segment getB() {
+		return B;
+	}
+
+	public void setB(Segment b) {
+		B = b;
+	}
+	
+
+	public Point getLeftP() {
+		return leftP;
+	}
+
+	public void setLeftP(Point leftP) {
+		this.leftP = leftP;
+	}
+
+	public Point getRightP() {
+		return rightP;
+	}
+
+	public void setRightP(Point rightP) {
+		this.rightP = rightP;
+	}
+
+	/**
+	 * Will cut the containing trapezoid into either 4 new trapezoids, 3 new trapezoids, or 2 new trapezoids
+	 * @param list
+	 * @param i
+	 */
 	private void handleContainedInSingleTrapezoid(ArrayList<Leaf> list, int i) {
-		 //System.out.println("Case I");
-        //split into 4 sections
         Trapezoid old = list.get(0).getData();
-        Trapezoid lefty = new Trapezoid(old.getLeftP(), segments.get(i).getP1(), old.getTopSeg(), old.getBottomSeg());
-        Trapezoid righty = new Trapezoid(segments.get(i).getQ1(), old.getRightP(), old.getTopSeg(), old.getBottomSeg());
-        Trapezoid top = new Trapezoid(segments.get(i).getP1(), segments.get(i).getQ1(), old.getTopSeg(), segments.get(i));
-        Trapezoid bottom = new Trapezoid(segments.get(i).getP1(), segments.get(i).getQ1(), segments.get(i), old.getBottomSeg());
-        XNode ll = new XNode(segments.get(i).getP1());
-        XNode rr = new XNode(segments.get(i).getQ1());
-        YNode ss = new YNode(segments.get(i));
+        
+        Trapezoid tLeft = new Trapezoid(old.getLeftP(), segments.get(i).getP1(), old.getTopSeg(), old.getBottomSeg());
+//        tLeft.setFace(old.getFace());
+        Trapezoid tRight = new Trapezoid(segments.get(i).getQ1(), old.getRightP(), old.getTopSeg(), old.getBottomSeg());
+//        tRight.setFace(old.getFace());
+        Trapezoid tAbove = new Trapezoid(segments.get(i).getP1(), segments.get(i).getQ1(), old.getTopSeg(), segments.get(i));
+//        tAbove.setFace(segments.get(i).getFace());
+        Trapezoid tBelow = new Trapezoid(segments.get(i).getP1(), segments.get(i).getQ1(), segments.get(i), old.getBottomSeg());
+//        Segment seg = segments.get(i); 
+//        Segment twin = segmentMap.get(seg.getTwin()); 
+//        tBelow.setFace(twin.getFace());
+        
+        XNode leftX = new XNode(segments.get(i).getP1());
+        XNode rightX = new XNode(segments.get(i).getQ1());
+        YNode yNode = new YNode(segments.get(i));
 
-        Leaf leftyN = new Leaf(lefty);
-        lefty.setLeaf(leftyN);
-        Leaf rightyN = new Leaf(righty);
-        righty.setLeaf(rightyN);
-        Leaf topN = new Leaf(top);
-        top.setLeaf(topN);
-        Leaf bottomN = new Leaf(bottom);
-        bottom.setLeaf(bottomN);
-        if (!(!lefty.hasWidth() || !righty.hasWidth())) {
+        Leaf leftLeaf = new Leaf(tLeft);
+        tLeft.setLeaf(leftLeaf);
+        
+        Leaf rightLeaf = new Leaf(tRight);
+        tRight.setLeaf(rightLeaf);
+        
+        Leaf topLeaf = new Leaf(tAbove);
+        tAbove.setLeaf(topLeaf);
+        
+        Leaf bottomLeaf = new Leaf(tBelow);
+        tBelow.setLeaf(bottomLeaf);
+        
+        /**
+         * Breaks the parent trapezoid into 4 new trapezoids
+         */
+        if (tLeft.hasWidth() && tRight.hasWidth()) {
+//        if (true) {
+            leftX.setLeft(leftLeaf);
+            leftX.setRight(rightX);
+            rightX.setRight(rightLeaf);
+            rightX.setLeft(yNode);
+            yNode.setLeft(topLeaf);
+            yNode.setRight(bottomLeaf);
 
-            //link all the nodes for the trapezoids
-            ll.setLeft(leftyN);
-            ll.setRight(rr);
-            rr.setRight(rightyN);
-            rr.setLeft(ss);
-            ss.setLeft(topN);
-            ss.setRight(bottomN);
-
-            //connect the nodes to the old structure
+            
             if (list.get(0).getParent() == null) {
-                dag.setRoot(ll);
+                dag.setRoot(leftX);
             } else {
-                //the previous node might have more than one parent node
+            	/**
+            	 * Update the parents of the trapezoid
+            	 */
                 ArrayList<Node> parents = list.get(0).getParents();
                 for (int j = 0; j < parents.size(); j++) {
                     Node tempParent = parents.get(j);
                     if (tempParent.getLeft() == list.get(0)) {
-                        tempParent.setLeft(ll);
+                        tempParent.setLeft(leftX);
                     } else {
-                        tempParent.setRight(ll);
+                        tempParent.setRight(leftX);
                     }
                 }
             }
 
-            //link the trapezoids together
-            lowerLink(lefty, bottom);
-            lowerLink(old.getlLeftNeighbor(), lefty);
-            upperLink(lefty, top);
-            upperLink(old.getuLeftNeighbor(), lefty);
+            /**
+             * Set the adjacent trapezoids
+             */
+            lowerLink(tLeft, tBelow);
+            lowerLink(old.getlLeftNeighbor(), tLeft);
+            upperLink(tLeft, tAbove);
+            upperLink(old.getuLeftNeighbor(), tLeft);
 
-            lowerLink(righty, old.getlRightNeighbor());
-            lowerLink(bottom, righty);
-            upperLink(righty, old.getuRightNeighbor());
-            upperLink(top, righty);
-        } else if (!lefty.hasWidth() && righty.hasWidth()) {//only left has zero width
-            //link all the nodes for the trapezoids
-            rr.setLeft(ss);
-            rr.setRight(rightyN);
-            ss.setLeft(topN);
-            ss.setRight(bottomN);
+            lowerLink(tRight, old.getlRightNeighbor());
+            lowerLink(tBelow, tRight);
+            upperLink(tRight, old.getuRightNeighbor());
+            upperLink(tAbove, tRight);
+        } 
+        /**
+         * Breaks parent into 3 trapezoids top, bottom, right
+         */
+        else if (!tLeft.hasWidth() && tRight.hasWidth()) {
+        	
+        	rightX.setLeft(yNode);
+        	rightX.setRight(rightLeaf);
+            yNode.setLeft(topLeaf);
+            yNode.setRight(bottomLeaf);
 
-            //connect the nodes to the old structure
             if (list.get(0).getParent() == null) {
-                dag.setRoot(rr);
+                dag.setRoot(rightX);
             } else {
-                //the previous node might have more than one parent node
                 ArrayList<Node> parents = list.get(0).getParents();
                 for (int j = 0; j < parents.size(); j++) {
                     Node tempParent = parents.get(j);
                     if (tempParent.getLeft() == list.get(0)) {
-                        tempParent.setLeft(rr);
+                        tempParent.setLeft(rightX);
                     } else {
-                        tempParent.setRight(rr);
+                        tempParent.setRight(rightX);
                     }
                 }
             }
 
-            //link the trapezoids together
-            lowerLink(old.getlLeftNeighbor(), bottom);
-            upperLink(old.getuLeftNeighbor(), top);
+            lowerLink(old.getlLeftNeighbor(), tBelow);
+            upperLink(old.getuLeftNeighbor(), tAbove);
 
-            lowerLink(righty, old.getlRightNeighbor());
-            lowerLink(bottom, righty);
-            upperLink(righty, old.getuRightNeighbor());
-            upperLink(top, righty);
-        } else if (!righty.hasWidth() && lefty.hasWidth()) {//only right has zero width
-            //link all the nodes for the trapezoids
-            ll.setLeft(leftyN);
-            ll.setRight(ss);
-            ss.setLeft(topN);
-            ss.setRight(bottomN);
+            lowerLink(tRight, old.getlRightNeighbor());
+            lowerLink(tBelow, tRight);
+            upperLink(tRight, old.getuRightNeighbor());
+            upperLink(tAbove, tRight);
+        } 
+        /**
+         * Breaks parent into 3 trapezoids, left, top, bottom
+         */
+        else if (!tRight.hasWidth() && tLeft.hasWidth()) {
+        	leftX.setLeft(leftLeaf);
+        	leftX.setRight(yNode);
+        	yNode.setLeft(topLeaf);
+            yNode.setRight(bottomLeaf);
 
-            //connect the nodes to the old structure
             if (list.get(0).getParent() == null) {
-                dag.setRoot(ll);
+                dag.setRoot(leftX);
             } else {
-                //the previous node might have more than one parent node
                 ArrayList<Node> parents = list.get(0).getParents();
                 for (int j = 0; j < parents.size(); j++) {
                     Node tempParent = parents.get(j);
                     if (tempParent.getLeft() == list.get(0)) {
-                        tempParent.setLeft(ll);
+                        tempParent.setLeft(leftX);
                     } else {
-                        tempParent.setRight(ll);
+                        tempParent.setRight(leftX);
                     }
                 }
             }
 
-            //link the trapezoids together
-            lowerLink(lefty, bottom);
-            lowerLink(old.getlLeftNeighbor(), lefty);
-            upperLink(lefty, top);
-            upperLink(old.getuLeftNeighbor(), lefty);
+            lowerLink(tLeft, tBelow);
+            lowerLink(old.getlLeftNeighbor(), tLeft);
+            upperLink(tLeft, tAbove);
+            upperLink(old.getuLeftNeighbor(), tLeft);
 
-            lowerLink(bottom, old.getlRightNeighbor());
-            upperLink(top, old.getuRightNeighbor());
-        } else {
-            //both have zero width
+            lowerLink(tBelow, old.getlRightNeighbor());
+            upperLink(tAbove, old.getuRightNeighbor());
+        } 
+        /**
+         * Breaks parent into 2 trapezoids, one top, and one bottom
+         */
+        else {
+        	yNode.setLeft(topLeaf);
+            yNode.setRight(bottomLeaf);
 
-            //build the search structure
-            ss.setLeft(topN);
-            ss.setRight(bottomN);
-
-            //connect the nodes to the old structure
             if (list.get(0).getParent() == null) {
-                dag.setRoot(ss);
+                dag.setRoot(yNode);
             } else {
-                //the previous node might have more than one parent node
                 ArrayList<Node> parents = list.get(0).getParents();
                 for (int j = 0; j < parents.size(); j++) {
                     Node tempParent = parents.get(j);
                     if (tempParent.getLeft() == list.get(0)) {
-                        tempParent.setLeft(ss);
+                        tempParent.setLeft(yNode);
                     } else {
-                        tempParent.setRight(ss);
+                        tempParent.setRight(yNode);
                     }
                 }
             }
 
-            //link the trapezoids together (this is nontrivial in degenerates cases)
-            lowerLink(old.getlLeftNeighbor(), bottom);
-            lowerLink(bottom, old.getlRightNeighbor());
-            upperLink(old.getuLeftNeighbor(), top);
-            upperLink(top, old.getuRightNeighbor());
+            lowerLink(old.getlLeftNeighbor(), tBelow);
+            lowerLink(tBelow, old.getlRightNeighbor());
+            upperLink(old.getuLeftNeighbor(), tAbove);
+            upperLink(tAbove, old.getuRightNeighbor());
         }
 	}
 	

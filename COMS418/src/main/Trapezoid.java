@@ -3,6 +3,7 @@ package main;
 
 public final class Trapezoid {
 
+	private String face; 
     private Trapezoid uLeftNeighbor;
     private Trapezoid lLeftNeighbor;
     private Trapezoid uRightNeighbor;
@@ -28,7 +29,21 @@ public final class Trapezoid {
         leaf = null;
     }
     
-    public Trapezoid getuLeftNeighbor() {
+    
+    
+    public String getFace() {
+		return face;
+	}
+
+
+
+	public void setFace(String face) {
+		this.face = face;
+	}
+
+
+
+	public Trapezoid getuLeftNeighbor() {
         return uLeftNeighbor;
     }
     
@@ -89,7 +104,9 @@ public final class Trapezoid {
             return false;
         }
         Trapezoid tt = (Trapezoid) t;
-        return (this.topSeg == tt.topSeg) && (this.bottomSeg == tt.bottomSeg);
+        
+//        return (this.topSeg == tt.topSeg) && (this.bottomSeg == tt.bottomSeg); 
+        return (this.topSeg == tt.topSeg) && (this.bottomSeg == tt.bottomSeg) && (this.leftP == tt.leftP) && (this.rightP == tt.rightP);
     }
     
     /**
@@ -108,7 +125,8 @@ public final class Trapezoid {
     }
     
     public boolean hasWidth() {
-        return !leftP.equals(rightP);
+        return (rightP.getX() - leftP.getX()) > 0; 
     }
+    
 
 }

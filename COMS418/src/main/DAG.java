@@ -139,13 +139,13 @@ public class DAG{
         	/**
         	 * If slope is greater, it's above
         	 */
-            long x1 = p.getX();
-            long x2 = a.getQ1().getX();
-            long x3 = b.getQ1().getX();
-            long y1 = p.getY();
-            long y2 = a.getQ1().getY();
-            long y3 = b.getQ1().getY();
-            long result = (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1);
+            double x1 = p.getX();
+            double x2 = a.getQ1().getX();
+            double x3 = b.getQ1().getX();
+            double y1 = p.getY();
+            double y2 = a.getQ1().getY();
+            double y3 = b.getQ1().getY();
+            double result = (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1);
             return result > 0;
         }
 
