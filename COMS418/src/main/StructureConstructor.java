@@ -80,9 +80,9 @@ public class StructureConstructor{
 			  }
 		  }
 		  
-//		  minX -= 2; 
+		  minX = 0.0; 
 		  maxX += 2.0; 
-//		  minY -= 2; 
+		  minY = 0.0; 
 		  maxY += 2.0; 
 		  
 		  if(order == 1)

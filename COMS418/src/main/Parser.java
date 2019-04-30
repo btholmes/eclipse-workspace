@@ -60,20 +60,19 @@ class Parser{
 				  if(endQueries) break; 
 				  
 				  String trim = val.substring(1, val.length()-1); 
+				  trim = trim.replaceAll(" +", ""); 
 				  String[] parse = trim.split(","); 
-				  Point point = new Point(Integer.parseInt(parse[0]), Integer.parseInt(parse[1])); 
+				  Point point = new Point(Double.parseDouble(parse[0]), Double.parseDouble(parse[1])); 
 				  System.out.println("Trapezoid containing the point " + point + ":" );
 				  
 				  Trapezoid zoid = constructor.query(point); 
-				  Segment top = zoid.getTopSeg(); 
-		    		Segment bottom = zoid.getBottomSeg(); 
-		    		Point left = zoid.getLeftP(); 
-		    		Point right = zoid.getRightP(); 
+				  
+				  Segment[] bounds = zoid.getBoundary(); 
 		    		
-		    		System.out.println(top);
-		    		System.out.println(bottom);
-		    		System.out.println(left);
-		    		System.out.println(right);
+		    		System.out.println(bounds[1]);
+		    		System.out.println(bounds[3]);
+		    		System.out.println(bounds[0].getP1());
+		    		System.out.println(bounds[2].getQ1());
 			  }
 			  i++;   
 		  }  
