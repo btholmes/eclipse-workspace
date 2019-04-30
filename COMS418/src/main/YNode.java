@@ -1,6 +1,10 @@
 package main;
 
-
+/**
+ * 
+ * @author aguestuser
+ *
+ */
 public class YNode extends Node{
     private Segment data;
     

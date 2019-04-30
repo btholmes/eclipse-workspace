@@ -1,6 +1,10 @@
 package main;
 
-
+/**
+ * 
+ * @author aguestuser
+ *
+ */
 public class XNode extends Node {
     private Point data;
     

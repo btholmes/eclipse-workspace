@@ -10,7 +10,6 @@ import java.util.Scanner;
 import java.util.Set;
 
 
-
 /**
  * Reads input file, and constructs t-map and search structure
  * @author aguestuser
@@ -22,7 +21,7 @@ public class StructureConstructor{
 	private ArrayList<Segment> segments; 
 	private HashMap<String, Segment> segmentMap; 
 	private HashMap<String, Point> pointMap; 
-	private HashMap<Point, String> pointLookUp; 
+	private HashMap<String, String> pointLookUp; 
 	private HashMap<String, Face> faceMap; 
 	private Segment L; 
 	private Segment R; 
@@ -127,16 +126,14 @@ public class StructureConstructor{
 	
 	
 
-	public HashMap<Point, String> getPointLookUp() {
+	public HashMap<String, String> getPointLookUp() {
 		return pointLookUp;
 	}
 
-	public void setPointLookUp(HashMap<Point, String> pointLookUp) {
+	public void setPointLookUp(HashMap<String, String> pointLookUp) {
 		this.pointLookUp = pointLookUp;
 	}
 	
-	
-
 	public HashMap<String, Segment> getSegmentMap() {
 		return segmentMap;
 	}
@@ -159,13 +156,13 @@ public class StructureConstructor{
 		point.setName(name);
 		point.setEdge(edge);
 		pointMap.put(name, point); 
-		pointLookUp.put(point, name); 
+		pointLookUp.put(point.toString(), name); 
 		
-	  minX = Math.min(minX, point.getX()); 
-	  maxX = Math.max(maxX,  point.getX()); 
+		minX = Math.min(minX, point.getX()); 
+		maxX = Math.max(maxX,  point.getX()); 
 	  
-	  minY = Math.min(minY, point.getY()); 
-	  maxY = Math.max(maxY,  point.getY()); 
+		minY = Math.min(minY, point.getY()); 
+		maxY = Math.max(maxY,  point.getY()); 
 	}
 	
 	private void makeFace(String line) {

@@ -10,7 +10,11 @@ import java.util.Iterator;
 
 import javax.swing.JFrame;
 
-
+/**
+ * 
+ * @author aguestuser
+ *
+ */
 class Drawing extends Canvas{
 	
 	private JFrame frame; 

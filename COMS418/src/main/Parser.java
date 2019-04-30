@@ -13,7 +13,13 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+/**
+ * 
+ * @author aguestuser
+ *
+ */
 class Parser{
+
 	
 	public static void main(String[] args) throws IOException {
 		  StructureConstructor constructor; 
@@ -43,6 +49,9 @@ class Parser{
 			  Set<Trapezoid> trapezoids = constructor.getTrapezoids(); 
 			  ArrayList<Trapezoid> list = new ArrayList<>(trapezoids); 
 			  
+			  HashMap<String, String> pointLookUp = constructor.getPointLookUp(); 
+			  HashMap<String, Segment> segmentLookUp = constructor.getSegmentMap(); 
+			  
 			  drawStruct(list, constructor.getMaxX()-constructor.getMinX(), constructor.getMaxY() - constructor.getMinY()); 
 			  printFile(constructor, list); 
 			  
@@ -65,14 +74,33 @@ class Parser{
 				  Point point = new Point(Double.parseDouble(parse[0]), Double.parseDouble(parse[1])); 
 				  System.out.println("Trapezoid containing the point " + point + ":" );
 				  
-				  Trapezoid zoid = constructor.query(point); 
-				  
-				  Segment[] bounds = zoid.getBoundary(); 
-		    		
-		    		System.out.println(bounds[1]);
-		    		System.out.println(bounds[3]);
-		    		System.out.println(bounds[0].getP1());
-		    		System.out.println(bounds[2].getQ1());
+				  if(pointLookUp.containsKey(point.toString())) {
+					  System.out.println(point.toString());
+				  }else {
+					  Trapezoid zoid = constructor.query(point); 
+					  Segment[] bounds = zoid.getBoundary(); 	
+					  /**
+					   * Determine if point lies on edge of zoid
+					   */
+					  boolean found = false; 
+					  for(Segment bound : bounds) {
+						  if(bound.liesOn(point)) {
+							  found = true; 
+							  System.out.println(bound);
+						  }
+						  if(found) break; 
+					  }
+					  if(!found) {
+						  /**
+						   * if not on edge, just print out bounds
+						   */
+						  System.out.println(bounds[1]);
+						  System.out.println(bounds[3]);
+						  System.out.println(bounds[0].getP1());
+						  System.out.println(bounds[2].getQ1());
+					  }
+				  }
+				 
 			  }
 			  i++;   
 		  }  
@@ -88,7 +116,7 @@ class Parser{
 	public static void printFile(StructureConstructor constructor, ArrayList<Trapezoid> list) throws FileNotFoundException, UnsupportedEncodingException {
 		LinkedHashMap<String, Set<Trapezoid>> faces = new LinkedHashMap<>(); 
 		PrintWriter writer = new PrintWriter("trapezoidalMap.txt", "UTF-8");
-		HashMap<Point, String> pointLookUp = constructor.getPointLookUp(); 
+		HashMap<String, String> pointLookUp = constructor.getPointLookUp(); 
 		HashMap<String, Segment> segmentLookUp = constructor.getSegmentMap(); 
 		
 		writer.println("****** Trapezoidal Map******");
@@ -118,13 +146,13 @@ class Parser{
 				if(!top.equals(constructor.getT())) {
 					Point q1 = top.getQ1(); 
 					Point p1 = top.getP1(); 
-					String segName = "e" + pointLookUp.get(q1).substring(1).trim() + "," + pointLookUp.get(p1).substring(1).trim(); 
+					String segName = "e" + pointLookUp.get(q1.toString()).substring(1).trim() + "," + pointLookUp.get(p1.toString()).substring(1).trim(); 
 					Segment seg = segmentLookUp.get(segName); 
 					face = seg.getFace(); 
 				}else if(!bottom.equals(constructor.getB())) {
 					Point p1 = bottom.getP1(); 
 					Point q1 = bottom.getQ1(); 
-					String segName = "e" + pointLookUp.get(p1).substring(1).trim() + "," + pointLookUp.get(q1).substring(1).trim(); 
+					String segName = "e" + pointLookUp.get(p1.toString()).substring(1).trim() + "," + pointLookUp.get(q1.toString()).substring(1).trim(); 
 					Segment seg = segmentLookUp.get(segName); 
 					face = seg.getFace(); 
 				}
@@ -152,8 +180,7 @@ class Parser{
 				Segment top = zoid.getTopSeg(); 
 				Segment right = bounds[2]; 
 				Segment bottom = zoid.getBottomSeg(); 
-				
-				
+						
 				
 				if(top.equals(constructor.getT())){
 					writer.println("T");

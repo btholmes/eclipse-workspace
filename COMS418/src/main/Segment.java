@@ -229,6 +229,15 @@ public class Segment{
     	return result; 
     }
     
+    private double distance(Point a, Point b) {
+    	return Math.sqrt((a.getX() - b.getX())*(a.getX() - b.getX()) + (a.getY() - b.getY())*(a.getY() - b.getY())); 
+    }
+    
+    
+    public boolean liesOn(Point point) {
+    	return distance(this.getP1(), point) + distance(point,this.getQ1()) == distance(this.getP1(), this.getQ1());     	
+    }
+    
     @Override
     public boolean equals(Object s) {
         if (!(s instanceof Segment) || s == null) {

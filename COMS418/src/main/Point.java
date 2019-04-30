@@ -1,5 +1,10 @@
 package main;
 
+/**
+ * 
+ * @author aguestuser
+ *
+ */
 public class Point implements Comparable<Point> {
 
 	private String name; 
@@ -64,7 +69,7 @@ public class Point implements Comparable<Point> {
             return false;
         }
         Point pp = (Point) p;
-        return (this.x == pp.x) && (this.y == pp.y);
+        return Math.abs(this.x - pp.x) <= 0.000001 && Math.abs(this.y - pp.y)<= 0.000001;
     }
 
     @Override

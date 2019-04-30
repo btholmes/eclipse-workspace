@@ -1,5 +1,10 @@
 package main;
 
+/**
+ * 
+ * @author aguestuser
+ *
+ */
 public class Leaf extends Node{
     private Trapezoid data;
     

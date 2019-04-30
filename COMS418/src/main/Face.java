@@ -2,6 +2,11 @@ package main;
 
 import java.util.ArrayList;
 
+/**
+ * 
+ * @author aguestuser
+ *
+ */
 public class Face {
 
 	private String name; 

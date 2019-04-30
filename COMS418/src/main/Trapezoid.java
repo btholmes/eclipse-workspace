@@ -1,6 +1,10 @@
 package main;
 
-
+/**
+ * 
+ * @author aguestuser
+ *
+ */
 public final class Trapezoid {
 
 	private String face; 

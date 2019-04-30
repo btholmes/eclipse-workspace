@@ -2,7 +2,11 @@ package main;
 
 import java.util.ArrayList;
 
-
+/**
+ * 
+ * @author aguestuser
+ *
+ */
 public abstract class Node {
     private ArrayList<Node> parents;
     private Node parent = null;
