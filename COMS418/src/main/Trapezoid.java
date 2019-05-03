@@ -7,6 +7,7 @@ package main;
  */
 public final class Trapezoid {
 
+	private String name; 
 	private String face; 
     private Trapezoid uLeftNeighbor;
     private Trapezoid lLeftNeighbor;
@@ -35,7 +36,25 @@ public final class Trapezoid {
     
     
     
-    public String getFace() {
+    
+    
+    public String getName() {
+		return name;
+	}
+
+
+
+
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+
+
+
+
+	public String getFace() {
 		return face;
 	}
 

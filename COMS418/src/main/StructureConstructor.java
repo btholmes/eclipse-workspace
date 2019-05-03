@@ -27,6 +27,12 @@ public class StructureConstructor{
 	private Segment R; 
 	private Segment T; 
 	private Segment B; 
+	
+	private Point c1; 
+	private Point c2; 
+	private Point c3; 
+	private Point c4; 
+	
 	private Face unboundedFace; 
 	
 	private Point leftP; 
@@ -84,6 +90,11 @@ public class StructureConstructor{
 		  minY = 0.0; 
 		  maxY += 2.0; 
 		  
+		  c1 = new Point(minX, maxY); 
+		  c2 = new Point(minX, minY); 
+		  c3 = new Point(maxX, minY); 
+		  c4 = new Point(maxX, maxY); 
+		  
 		  if(order == 1)
 			  Collections.shuffle(segments);
 		  
@@ -92,6 +103,38 @@ public class StructureConstructor{
 	
 	
 	
+	public Point getC1() {
+		return c1;
+	}
+
+	public void setC1(Point c1) {
+		this.c1 = c1;
+	}
+
+	public Point getC2() {
+		return c2;
+	}
+
+	public void setC2(Point c2) {
+		this.c2 = c2;
+	}
+
+	public Point getC3() {
+		return c3;
+	}
+
+	public void setC3(Point c3) {
+		this.c3 = c3;
+	}
+
+	public Point getC4() {
+		return c4;
+	}
+
+	public void setC4(Point c4) {
+		this.c4 = c4;
+	}
+
 	public double getMinX() {
 		return minX;
 	}
@@ -347,8 +390,8 @@ public class StructureConstructor{
         Leaf rightLeaf = new Leaf(tRight);
         tRight.setLeaf(rightLeaf);
         
-        Leaf topLeaf = new Leaf(tAbove);
-        tAbove.setLeaf(topLeaf);
+        Leaf topLeaves = new Leaf(tAbove);
+        tAbove.setLeaf(topLeaves);
         
         Leaf bottomLeaf = new Leaf(tBelow);
         tBelow.setLeaf(bottomLeaf);
@@ -362,7 +405,7 @@ public class StructureConstructor{
             leftX.setRight(rightX);
             rightX.setRight(rightLeaf);
             rightX.setLeft(yNode);
-            yNode.setLeft(topLeaf);
+            yNode.setLeft(topLeaves);
             yNode.setRight(bottomLeaf);
 
             
@@ -403,7 +446,7 @@ public class StructureConstructor{
         	
         	rightX.setLeft(yNode);
         	rightX.setRight(rightLeaf);
-            yNode.setLeft(topLeaf);
+            yNode.setLeft(topLeaves);
             yNode.setRight(bottomLeaf);
 
             if (list.get(0).getParent() == null) {
@@ -434,7 +477,7 @@ public class StructureConstructor{
         else if (!tRight.hasWidth() && tLeft.hasWidth()) {
         	leftX.setLeft(leftLeaf);
         	leftX.setRight(yNode);
-        	yNode.setLeft(topLeaf);
+        	yNode.setLeft(topLeaves);
             yNode.setRight(bottomLeaf);
 
             if (list.get(0).getParent() == null) {
@@ -463,7 +506,7 @@ public class StructureConstructor{
          * Breaks parent into 2 trapezoids, one top, and one bottom
          */
         else {
-        	yNode.setLeft(topLeaf);
+        	yNode.setLeft(topLeaves);
             yNode.setRight(bottomLeaf);
 
             if (list.get(0).getParent() == null) {
@@ -488,300 +531,346 @@ public class StructureConstructor{
 	}
 	
 	
+	
 	private void cutsThroughTrapezoid(ArrayList<Leaf> list, int i) {
-	       //System.out.println("Case II");
-        //the first and last cases get broken into 3 parts
-        //the middle ones are different
+        Trapezoid[] trapezoidsAbove = new Trapezoid[list.size()];
+        Trapezoid[] trapezoidsBelow = new Trapezoid[list.size()];
+        
+        fillTrapezoidArrays(list, i, trapezoidsAbove, trapezoidsBelow); 
+       
+        mergeTrapezoids(list, i, trapezoidsAbove, trapezoidsBelow); 
+       
+        linkTrapezoids(list, i, trapezoidsAbove, trapezoidsBelow); 
 
-        //if the left segment endpoint is not leftp of list.get(0).getData(), then
-        //there is an extra trapezoid at the left end.  Likewise for rightp of list[n-1].getData()
+	}
+	
+	private void fillTrapezoidArrays(ArrayList<Leaf> list, int i, Trapezoid[] trapezoidsAbove, Trapezoid[] trapezoidsBelow){
+			/**
+			 * Fill top array first
+			 */
+	       for (int j = 0; j < list.size(); j++) {
+	            if (j == 0) {
+	                Point rightPoint = null;
+	                
+	                if (segments.get(i).isPointAboveSeg(list.get(j).getData().getRightP()) ) {
+	                	rightPoint = list.get(j).getData().getRightP();
+	                }
+	                trapezoidsAbove[j] = new Trapezoid(segments.get(i).getP1(), rightPoint, list.get(j).getData().getTopSeg(), segments.get(i));
+	                
+	            } else if (j == list.size() - 1) {
+	                Point leftPoint = null;
+	                if (segments.get(i).isPointAboveSeg(list.get(j).getData().getLeftP()) ) {
+	                	leftPoint = list.get(j).getData().getLeftP();
+	                }
+	                trapezoidsAbove[j] = new Trapezoid(leftPoint, segments.get(i).getQ1(), list.get(j).getData().getTopSeg(), segments.get(i));
+	            } else {
+	                Point rightPoint = null;
+	                if (segments.get(i).isPointAboveSeg(list.get(j).getData().getRightP()) ) {
+	                	rightPoint = list.get(j).getData().getRightP();
+	                }
+	                Point leftPoint = null;
+	                if (segments.get(i).isPointAboveSeg(list.get(j).getData().getLeftP()) ) {
+	                	leftPoint = list.get(j).getData().getLeftP();
+	                }
+	                trapezoidsAbove[j] = new Trapezoid(leftPoint, rightPoint, list.get(j).getData().getTopSeg(), segments.get(i));
+	            }
 
-        //for everything in the middle, we start with a single top and bottom trap for both
-        //then we merge trapezoids together as needed
-        //note that before merging, some trapezoids may have an endpoint which is null
-        Trapezoid[] topArr = new Trapezoid[list.size()];
-        Trapezoid[] botArr = new Trapezoid[list.size()];
+	            /**
+	             * Now fill bottom array
+	             */
+	            if (j == 0) {
+	                Point rightPoint = null;
+	                if (!segments.get(i).isPointAboveSeg(list.get(j).getData().getRightP()) ) {
+	                	rightPoint = list.get(j).getData().getRightP();
+	                }
+	                trapezoidsBelow[j] = new Trapezoid(segments.get(i).getP1(), rightPoint, segments.get(i), list.get(j).getData().getBottomSeg());
+	            } else if (j == list.size() - 1) {
+	                Point leftPoint = null;
+	                if (!segments.get(i).isPointAboveSeg(list.get(j).getData().getLeftP()) ) {
+	                	leftPoint = list.get(j).getData().getLeftP();
+	                }
+	                trapezoidsBelow[j] = new Trapezoid(leftPoint, segments.get(i).getQ1(), segments.get(i), list.get(j).getData().getBottomSeg());
+	            } else {
+	                Point rightPoint = null;
+	                if (!segments.get(i).isPointAboveSeg(list.get(j).getData().getRightP()) ) {
+	                	rightPoint = list.get(j).getData().getRightP();
+	                }
+	                Point leftPoint = null;
+	                if (!segments.get(i).isPointAboveSeg(list.get(j).getData().getLeftP()) ) {
+	                	leftPoint = list.get(j).getData().getLeftP();
+	                }
+	                trapezoidsBelow[j] = new Trapezoid(leftPoint, rightPoint, segments.get(i), list.get(j).getData().getBottomSeg());
+	            }
+	        }
+	}
+	
+	private void mergeTrapezoids(ArrayList<Leaf> list, int i, Trapezoid[] trapezoidsAbove, Trapezoid[] trapezoidsBelow) {
+        int leftT = 0;
+        int rightT;
+        int leftB = 0;
+        int rightB;
+        
         for (int j = 0; j < list.size(); j++) {
-            //top is defined by the original upper segment, the new segment & two endpoints
-            //left endpoint:
-                /*
-             * if j==0, is segment's left endpoint
-             * else is old trap's left endpoint if it is above the segment
+            if (trapezoidsAbove[j].getRightP() != null) {
+                rightT = j;
+                Trapezoid tempMerge = new Trapezoid(trapezoidsAbove[leftT].getLeftP(), trapezoidsAbove[rightT].getRightP(), trapezoidsAbove[leftT].getTopSeg(), segments.get(i));
+                for (int k = leftT; k <= rightT; k++) {
+                    trapezoidsAbove[k] = tempMerge;
+                }
+                leftT = j + 1;
+            }
+
+            if (trapezoidsBelow[j].getRightP() != null) {
+                rightB = j;
+                Trapezoid tempMerge = new Trapezoid(trapezoidsBelow[leftB].getLeftP(), trapezoidsBelow[rightB].getRightP(), segments.get(i), trapezoidsBelow[leftB].getBottomSeg());
+                for (int k = leftB; k <= rightB; k++) {
+                    trapezoidsBelow[k] = tempMerge;
+                }
+                leftB = j + 1;
+            }
+        }
+	}
+	
+	private void handleUppersLeft(ArrayList<Leaf> list, int j, Trapezoid[] trapezoidsAbove, Trapezoid[] trapezoidsBelow) {
+        /**
+         * Link upper trapezoid array together setting their lower left and right neighbor
+         */
+        if (trapezoidsAbove[j] != trapezoidsAbove[j - 1]) {
+            lowerLink(trapezoidsAbove[j - 1], trapezoidsAbove[j]);
+        }
+
+        /**
+         * If upper left neighbor is not null, link it
+         */
+        Trapezoid upperLeftT = list.get(j).getData().getuLeftNeighbor();
+        if (!list.get(j-1).getData().equals(upperLeftT)) {
+            upperLink(upperLeftT, trapezoidsAbove[j]);
+        }
+	}
+	
+	private void handleLowersLeft(ArrayList<Leaf> list, int j, Trapezoid[] trapezoidsAbove, Trapezoid[] trapezoidsBelow) {
+        /**
+         * Now do the same for lower trapezoid array, as long as they aren't the same trapezoid
+         */
+        if (trapezoidsBelow[j] != trapezoidsBelow[j - 1]) {
+            upperLink(trapezoidsBelow[j - 1], trapezoidsBelow[j]);
+        }
+
+        Trapezoid lowerLeftT = list.get(j).getData().getlLeftNeighbor();
+        if (!list.get(j-1).getData().equals(lowerLeftT)) {
+            lowerLink(lowerLeftT, trapezoidsBelow[j]);
+        }
+	}
+	
+	private void handleUppersRight(ArrayList<Leaf> list, int j, Trapezoid[] trapezoidsAbove, Trapezoid[] trapezoidsBelow) {
+		 if (trapezoidsAbove[j] != trapezoidsAbove[j + 1]) {
+             lowerLink(trapezoidsAbove[j], trapezoidsAbove[j + 1]);
+         }
+
+         Trapezoid upperRight = list.get(j).getData().getuRightNeighbor();
+         if (!list.get(j + 1).getData().equals(upperRight)) {
+             upperLink(trapezoidsAbove[j], upperRight);
+         }
+		
+	}
+	
+	private void handleLowersRight(ArrayList<Leaf> list, int j, Trapezoid[] trapezoidsAbove, Trapezoid[] trapezoidsBelow) {
+		/**
+		 * Check for repeats before linking
+		 */
+        if (trapezoidsBelow[j] != trapezoidsBelow[j + 1]) {
+            upperLink(trapezoidsBelow[j], trapezoidsBelow[j + 1]);
+        }
+
+        Trapezoid lowerRight = list.get(j).getData().getlRightNeighbor();
+        if (!list.get(j + 1).getData().equals(lowerRight)) {
+            lowerLink(trapezoidsBelow[j], lowerRight);
+        }
+	}
+
+	private void handleFarLeft(ArrayList<Leaf> list, Trapezoid[] trapezoidsAbove, Trapezoid[] trapezoidsBelow, Trapezoid farLeft, Trapezoid oldLeft) {
+        if (farLeft != null) {
+            lowerLink(oldLeft.getlLeftNeighbor(), farLeft);
+            upperLink(oldLeft.getuLeftNeighbor(), farLeft);
+
+            lowerLink(farLeft, trapezoidsBelow[0]);
+            upperLink(farLeft, trapezoidsAbove[0]);
+        } else {
+            /**
+             * Set the links
              */
-            //right endpoint is similar
-            if (j == 0) {
-                Point rtP = null;
-                
-                if (segments.get(i).isPointAboveSeg(list.get(j).getData().getRightP()) ) {
-                    rtP = list.get(j).getData().getRightP();
-                }
-                topArr[j] = new Trapezoid(segments.get(i).getP1(), rtP, list.get(j).getData().getTopSeg(), segments.get(i));
-            } else if (j == list.size() - 1) {
-                Point ltP = null;
-                if (segments.get(i).isPointAboveSeg(list.get(j).getData().getLeftP()) ) {
-                    ltP = list.get(j).getData().getLeftP();
-                }
-                topArr[j] = new Trapezoid(ltP, segments.get(i).getQ1(), list.get(j).getData().getTopSeg(), segments.get(i));
+        	if (oldLeft.getTopSeg().getP1().equals(oldLeft.getLeftP())) {
+        		/**
+        		 * Shared left top vertice, is a triangle
+        		 */
+                lowerLink(oldLeft.getlLeftNeighbor(), trapezoidsBelow[0]);
+            } else if (oldLeft.getBottomSeg().getP1().equals(oldLeft.getLeftP())) {
+                /**
+                 * Shared bottom left vertice is a triangle
+                 */
+                upperLink(oldLeft.getuLeftNeighbor(), trapezoidsAbove[0]);
             } else {
-                Point rtP = null;
-                if (segments.get(i).isPointAboveSeg(list.get(j).getData().getRightP()) ) {
-                    rtP = list.get(j).getData().getRightP();
-                }
-                Point ltP = null;
-                if (segments.get(i).isPointAboveSeg(list.get(j).getData().getLeftP()) ) {
-                    ltP = list.get(j).getData().getLeftP();
-                }
-                topArr[j] = new Trapezoid(ltP, rtP, list.get(j).getData().getTopSeg(), segments.get(i));
+                /**
+                 * Neither share a vertice
+                 */
+                lowerLink(oldLeft.getlLeftNeighbor(), trapezoidsBelow[0]);
+                upperLink(oldLeft.getuLeftNeighbor(), trapezoidsAbove[0]);
             }
+        }
+	}
 
-            //the bottom array is constructed using a similar strategy
-            if (j == 0) {
-                Point rtP = null;
-                if (!segments.get(i).isPointAboveSeg(list.get(j).getData().getRightP()) ) {
-                    rtP = list.get(j).getData().getRightP();
-                }
-                botArr[j] = new Trapezoid(segments.get(i).getP1(), rtP, segments.get(i), list.get(j).getData().getBottomSeg());
-            } else if (j == list.size() - 1) {
-                Point ltP = null;
-                if (!segments.get(i).isPointAboveSeg(list.get(j).getData().getLeftP()) ) {
-                    ltP = list.get(j).getData().getLeftP();
-                }
-                botArr[j] = new Trapezoid(ltP, segments.get(i).getQ1(), segments.get(i), list.get(j).getData().getBottomSeg());
+	private void handleFarRight(ArrayList<Leaf> list, Trapezoid[] trapezoidsAbove, Trapezoid[] trapezoidsBelow, Trapezoid farRight, Trapezoid oldRight) {
+	      if (farRight != null) {
+	            lowerLink(farRight, oldRight.getlRightNeighbor());
+	            upperLink(farRight, oldRight.getuRightNeighbor());
+
+	            lowerLink(trapezoidsBelow[trapezoidsBelow.length - 1], farRight);
+	            upperLink(trapezoidsAbove[trapezoidsAbove.length - 1], farRight);
+	        } else {
+	            if (oldRight.getTopSeg().getQ1().equals(oldRight.getRightP())) {
+	        		/**
+	        		 * Shared right top vertice, is a triangle
+	        		 */
+	                lowerLink(trapezoidsBelow[trapezoidsBelow.length - 1], oldRight.getlRightNeighbor());
+	            } else if (oldRight.getBottomSeg().getQ1().equals(oldRight.getRightP())) {
+	        		/**
+	        		 * Shared right bottom vertice, is a triangle
+	        		 */
+	                upperLink(trapezoidsAbove[trapezoidsAbove.length - 1], oldRight.getuRightNeighbor());
+	            } else {
+	        		/**
+	        		 * Neither share a vertice
+	        		 */
+	                lowerLink(trapezoidsBelow[trapezoidsBelow.length - 1], oldRight.getlRightNeighbor());
+	                upperLink(trapezoidsAbove[trapezoidsAbove.length - 1], oldRight.getuRightNeighbor());
+	            }
+	        }
+	}
+
+	private void fillTopAndBottomLeaves(Leaf[] topLeaves, Leaf[] bottomLeaves, Trapezoid[] trapezoidsAbove, Trapezoid[] trapezoidsBelow) {
+        Leaf temp;
+        for (int j = 0; j < topLeaves.length; j++) {
+            if (j == 0 || trapezoidsAbove[j] != trapezoidsAbove[j - 1]) {
+                /**
+                 * New leaf
+                 */
+            	temp = new Leaf(trapezoidsAbove[j]);
+                trapezoidsAbove[j].setLeaf(temp);
+                topLeaves[j] = temp;
             } else {
-                Point rtP = null;
-                if (!segments.get(i).isPointAboveSeg(list.get(j).getData().getRightP()) ) {
-                    rtP = list.get(j).getData().getRightP();
-                }
-                Point ltP = null;
-                if (!segments.get(i).isPointAboveSeg(list.get(j).getData().getLeftP()) ) {
-                    ltP = list.get(j).getData().getLeftP();
-                }
-                botArr[j] = new Trapezoid(ltP, rtP, segments.get(i), list.get(j).getData().getBottomSeg());
+                /**
+                 * Use old leaf
+                 */
+                topLeaves[j] = topLeaves[j - 1];
+            }
+
+            if (j == 0 || trapezoidsBelow[j] != trapezoidsBelow[j - 1]) {
+                /**
+                 * New leaf
+                 */
+            	temp = new Leaf(trapezoidsBelow[j]);
+                trapezoidsBelow[j].setLeaf(temp);
+                bottomLeaves[j] = temp;
+            } else {
+                /**
+                 * Use old leaf
+                 */
+                bottomLeaves[j] = bottomLeaves[j - 1];
             }
         }
+	}
 
-        //then merge degenerate trapezoids together (those with a null bounding point)
-        int aTop = 0;
-        int bTop;
-        int aBot = 0;
-        int bBot;
-        boolean topHasRightP = false;
-        boolean botHasRightP = false;
-        for (int j = 0; j < list.size(); j++) {
-            if (topArr[j].getRightP() != null) {
-                bTop = j;
-                //merge trapezoids aTop through bTop
-                //we only want one trapezoid, so we just have bTop-aTop+1 pointers to it for now
-                Trapezoid tempMerge = new Trapezoid(topArr[aTop].getLeftP(), topArr[bTop].getRightP(), topArr[aTop].getTopSeg(), segments.get(i));
-                for (int k = aTop; k <= bTop; k++) {
-                    //now there are duplicates of the same trapezoid unfortunately, but I think if we link them together left to right
-                    //this shouldn't cause problems later...it just means a bit more storage use
-                    topArr[k] = tempMerge;
-                }
-                aTop = j + 1;
-            }
-
-            if (botArr[j].getRightP() != null) {
-                bBot = j;
-                //merge trapezoids aBot through bBot
-                Trapezoid tempMerge = new Trapezoid(botArr[aBot].getLeftP(), botArr[bBot].getRightP(), segments.get(i), botArr[aBot].getBottomSeg());
-                for (int k = aBot; k <= bBot; k++) {
-                    botArr[k] = tempMerge;
-                }
-                aBot = j + 1;
-            }
+	
+	private void linkTrapezoids(ArrayList<Leaf> list, int i, Trapezoid[] trapezoidsAbove, Trapezoid[] trapezoidsBelow) {
+		
+        /**
+         * Link trapezoids, left then right
+         */
+        for (int j = 1; j < list.size(); j++) {
+            	handleUppersLeft(list, j, trapezoidsAbove, trapezoidsBelow); 
+            	handleLowersLeft(list, j, trapezoidsAbove, trapezoidsBelow); 
+        }
+        
+        for (int j = 0; j < list.size()-1; j++) {       		
+        		handleUppersRight(list, j, trapezoidsAbove, trapezoidsBelow); 
+        		handleLowersRight(list, j, trapezoidsAbove, trapezoidsBelow); 
         }
 
-        //do trapezoid links...this should unlink the original trapezoids from the physical structure except at the ends
-        //do all left links before doing right links in order to avoid linking errors
-        for (int j = 0; j < list.size(); j++) {
-            if (j != 0) {
-                //update left links
-                //link right to left
-                //only recycle old links if they are not in the list to be removed
-
-                //only when the trapezoids do not repeat
-                if (topArr[j] != topArr[j - 1]) {
-                    lowerLink(topArr[j - 1], topArr[j]);
-                }
-
-                //leave the upper left neighbor null unless we have something to set it to
-                Trapezoid temp2 = list.get(j).getData().getuLeftNeighbor();
-                if (!list.get(j-1).getData().equals(temp2)) {
-                    upperLink(temp2, topArr[j]);
-                }
-
-                //only do this for non-repeating trapezoids
-                if (botArr[j] != botArr[j - 1]) {
-                    upperLink(botArr[j - 1], botArr[j]);
-                }
-
-                temp2 = list.get(j).getData().getlLeftNeighbor();
-                if (!list.get(j-1).getData().equals(temp2)) {
-                    lowerLink(temp2, botArr[j]);
-                }
-
-            }
-
-        }
-        for (int j = 0; j < list.size(); j++) {
-            if (j != topArr.length - 1) {
-                //update right links
-
-                //only for non-repeats
-                if (topArr[j] != topArr[j + 1]) {
-                    lowerLink(topArr[j], topArr[j + 1]);
-                }
-
-                Trapezoid temp2 = list.get(j).getData().getuRightNeighbor();
-                if (!list.get(j + 1).getData().equals(temp2)) {
-                    upperLink(topArr[j], temp2);
-                }
-
-                //only for non-repeats
-                if (botArr[j] != botArr[j + 1]) {
-                    upperLink(botArr[j], botArr[j + 1]);
-                }
-
-                temp2 = list.get(j).getData().getlRightNeighbor();
-                if (!list.get(j + 1).getData().equals(temp2)) {
-                    lowerLink(botArr[j], temp2);
-                }
-            }
-        }
-
-        //deal with the possible extra end trapezoids
-        Trapezoid leftmost = null;
-        Trapezoid rightmost = null;
+        /**
+         * Cases where either farLeft or farRight trapezoid breaks into 3 parts
+         */
+        Trapezoid farLeft = null;
+        Trapezoid farRight = null;
         Trapezoid oldLeft = list.get(0).getData();
         Trapezoid oldRight = list.get(list.size() - 1).getData();
         if (!segments.get(i).getP1().equals(oldLeft.getLeftP())) {
-            //there is a leftmost trapezoid
-            leftmost = new Trapezoid(oldLeft.getLeftP(), segments.get(i).getP1(),
+            farLeft = new Trapezoid(oldLeft.getLeftP(), segments.get(i).getP1(),
                     oldLeft.getTopSeg(), oldLeft.getBottomSeg());
         }
         if (!segments.get(i).getQ1().equals(list.get(list.size() - 1).getData().getRightP())) {
-            //there is a rightmost trapezoid
-            rightmost = new Trapezoid(segments.get(i).getQ1(), oldRight.getRightP(),
+            farRight = new Trapezoid(segments.get(i).getQ1(), oldRight.getRightP(),
                     oldRight.getTopSeg(), oldRight.getBottomSeg());
         }
+        
+        handleFarLeft(list, trapezoidsAbove, trapezoidsBelow, farLeft, oldLeft); 
+        handleFarRight(list, trapezoidsAbove, trapezoidsBelow, farRight, oldRight); 
 
-        //add remaining trapezoid links at the end
-        if (leftmost != null) {
-            lowerLink(oldLeft.getlLeftNeighbor(), leftmost);
-            upperLink(oldLeft.getuLeftNeighbor(), leftmost);
+        
+        
 
-            lowerLink(leftmost, botArr[0]);
-            upperLink(leftmost, topArr[0]);
-        } else {
-            //link top & bot arr with appropriate left links of oldLeft
-            if (oldLeft.getTopSeg().getP1().equals(oldLeft.getBottomSeg().getP1())) {
-                //triangles, so no neighbors to worry about
-            } else if (oldLeft.getTopSeg().getP1().equals(oldLeft.getLeftP())) {
-                //upper half degenerates to a triangle
-                lowerLink(oldLeft.getlLeftNeighbor(), botArr[0]);
-            } else if (oldLeft.getBottomSeg().getP1().equals(oldLeft.getLeftP())) {
-                //lower half degenerates to a triangle
-                upperLink(oldLeft.getuLeftNeighbor(), topArr[0]);
-            } else {
-                //neither degenerates to a triangle
-                lowerLink(oldLeft.getlLeftNeighbor(), botArr[0]);
-                upperLink(oldLeft.getuLeftNeighbor(), topArr[0]);
-            }
-        }
-        if (rightmost != null) {
-            lowerLink(rightmost, oldRight.getlRightNeighbor());
-            upperLink(rightmost, oldRight.getuRightNeighbor());
+        Leaf[] topLeaves = new Leaf[trapezoidsAbove.length];
+        Leaf[] bottomLeaves = new Leaf[trapezoidsBelow.length];
+        
+        fillTopAndBottomLeaves(topLeaves, bottomLeaves, trapezoidsAbove, trapezoidsBelow); 
+        
+        
+        updateStructure(list, i, farLeft, farRight, topLeaves, bottomLeaves); 
+		
+	}
 
-            lowerLink(botArr[botArr.length - 1], rightmost);
-            upperLink(topArr[topArr.length - 1], rightmost);
-        } else {
-            //link the top & bot arr with the appropriate right links of oldRight
-            if (oldRight.getTopSeg().getQ1().equals(oldRight.getBottomSeg().getQ1())) {
-                //triangles, hence no right neighbors
-            } else if (oldRight.getTopSeg().getQ1().equals(oldRight.getRightP())) {
-                //upper half degenerates to a triangle
-                lowerLink(botArr[botArr.length - 1], oldRight.getlRightNeighbor());
-            } else if (oldRight.getBottomSeg().getQ1().equals(oldRight.getRightP())) {
-                //lower half degenerates to a triangle
-                upperLink(topArr[topArr.length - 1], oldRight.getuRightNeighbor());
-            } else {
-                //neither degenerates to a triangle
-                lowerLink(botArr[botArr.length - 1], oldRight.getlRightNeighbor());
-                upperLink(topArr[topArr.length - 1], oldRight.getuRightNeighbor());
-            }
-        }
-
-        //create leaf structures ahead of time to deal with the duplication problem
-        Leaf[] topLeaf = new Leaf[topArr.length];
-        Leaf[] botLeaf = new Leaf[botArr.length];
-        Leaf aa;
-        for (int j = 0; j < topLeaf.length; j++) {
-            if (j == 0 || topArr[j] != topArr[j - 1]) {
-                //create a new topLeaf
-                aa = new Leaf(topArr[j]);
-                topArr[j].setLeaf(aa);
-                topLeaf[j] = aa;
-            } else {
-                //reuse the old Leaf
-                topLeaf[j] = topLeaf[j - 1];
-            }
-
-            if (j == 0 || botArr[j] != botArr[j - 1]) {
-                //create a new botLeaf
-                aa = new Leaf(botArr[j]);
-                botArr[j].setLeaf(aa);
-                botLeaf[j] = aa;
-            } else {
-                //reuse the old Leaf
-                botLeaf[j] = botLeaf[j - 1];
-            }
-        }
-
-        //then add nodes and node links...this should unlink the original trapezoids from the physical structure
-        Node[] newStructures = new Node[list.size()];
+	
+	private void updateStructure(ArrayList<Leaf> list, int i,  Trapezoid farLeft, Trapezoid farRight, Leaf[] topLeaves, Leaf[] bottomLeaves) {
+		Leaf temp; 
+        Node[] newNodes = new Node[list.size()];
         for (int j = 0; j < list.size(); j++) {
-            Node yy = new YNode(segments.get(i));
-            if (j == 0 && leftmost != null) {
-                XNode xx = new XNode(segments.get(i).getP1());
-                aa = new Leaf(leftmost);
-                leftmost.setLeaf(aa);
-                xx.setLeft(aa);
-                xx.setRight(yy);
+            Node yNode = new YNode(segments.get(i));
+            if (j == 0 && farLeft != null) {
+                XNode xNode = new XNode(segments.get(i).getP1());
+                temp = new Leaf(farLeft);
+                farLeft.setLeaf(temp);
+                xNode.setLeft(temp);
+                xNode.setRight(yNode);
 
-                newStructures[j] = xx;
-            } else if (j == newStructures.length - 1 && rightmost != null) {
+                newNodes[j] = xNode;
+            } else if (j == newNodes.length - 1 && farRight != null) {
                 XNode xx = new XNode(segments.get(i).getQ1());
-                aa = new Leaf(rightmost);
-                rightmost.setLeaf(aa);
-                xx.setRight(aa);
-                xx.setLeft(yy);
+                temp = new Leaf(farRight);
+                farRight.setLeaf(temp);
+                xx.setRight(temp);
+                xx.setLeft(yNode);
 
-                newStructures[j] = xx;
+                newNodes[j] = xx;
             } else {
-                newStructures[j] = yy;
+            	newNodes[j] = yNode;
             }
 
-            yy.setLeft(topLeaf[j]);
+            yNode.setLeft(topLeaves[j]);
 
-            yy.setRight(botLeaf[j]);
+            yNode.setRight(bottomLeaves[j]);
 
-            //insert the new structure in place of the old one
-            //Node parent = list.get(j).getParent();
-
-            //now there may be many parents...
             ArrayList<Node> parents = list.get(j).getParents();
             for (int k = 0; k < parents.size(); k++) {
                 Node parent = parents.get(k);
                 if (parent.getLeft() == list.get(j)) {
                     //replace left child
-                    parent.setLeft(newStructures[j]);
+                    parent.setLeft(newNodes[j]);
                 } else {
-                    parent.setRight(newStructures[j]);
+                    parent.setRight(newNodes[j]);
                 }
             }
         }
 	}
+	
 	
 	
     /**
